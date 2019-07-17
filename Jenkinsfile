@@ -1,4 +1,4 @@
-node(node1) {
+node('node1') {
       withDockerContainer(args: '-v /root/.m2:/root/.m2', image: 'maven:3-alpine') {
        stage('Build') {
 	      checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/prateekjain87/simple-java-maven-app']]]) 
