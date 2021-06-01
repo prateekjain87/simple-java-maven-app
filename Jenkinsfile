@@ -7,6 +7,9 @@ pipeline {
 //       }
 //    }
     stages {
+        stage('Checkout') {
+            git checkout scm
+        }
         stage('Build') {
             steps {
                 sh 'mvn -B -DskipTests clean package'
