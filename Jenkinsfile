@@ -6,6 +6,9 @@ pipeline {
 //           args '-v /root/.m2:/root/.m2'
 //       }
 //    }
+    tools{
+            maven 'maven'
+     }
     stages {
         stage('Checkout') {
             steps {
