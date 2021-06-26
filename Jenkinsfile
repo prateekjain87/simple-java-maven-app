@@ -37,7 +37,6 @@ pipeline {
     tools{
             maven 'maven'
      }
-    def committerEmail = sh (script: 'git --no-pager show -s --format=\'%ae\'', returnStdout: true).trim()
     stages {
         stage('Checkout') {
             steps {
@@ -46,13 +45,16 @@ pipeline {
         }
         stage('Build') {
             steps {
-                try{
-                    sh 'mvn -B -DskipTests clean package'
-                    notifyBuild('FAILED_BUILD', committerEmail)
-                }
-                catch (exc) {
-                notifyBuild('FAILED_BUILD', committerEmail)
-                throw(exc)
+                script {
+                    def committerEmail = sh (script: 'git --no-pager show -s --format=\'%ae\'', returnStdout: true).trim()
+                    try {
+                        sh 'mvn -B -DskipTests clean package'
+                        notifyBuild('FAILED_BUILD', committerEmail)
+                    }
+                    catch (exc) {
+                        notifyBuild('FAILED_BUILD', committerEmail)
+                    throw(exc)
+                    }
                 }
             }
         }
