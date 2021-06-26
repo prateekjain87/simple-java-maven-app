@@ -1,3 +1,31 @@
+def notifyBuild(String buildStatus, String committerEmail) {
+    // build status of null means successful
+    buildStatus =  buildStatus ?: 'SUCCESSFUL'
+
+    // Default values
+    def color = 'RED'
+    def colorCode = '#FF0000'
+    def subject = "${buildStatus}: Job -- ${env.JOB_NAME} [${env.BUILD_NUMBER}]"
+
+    def summary = "${subject} (${env.BUILD_URL}console)"
+    def details = """<p>Check console output at "<a href="${env.BUILD_URL}console">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>
+                  <p>Check the Test Reports at -- <a href="${env.BUILD_URL}testReport">Test Reports</a></p>
+                  <p>Check the Code Coverage Reports at -- <a href="${env.BUILD_URL}coverage">jacoco Code Coverage Reports</a></p>
+                  
+                  <br />
+                  <p>From,<br />Jenkins</p>"""
+if (buildStatus == 'SUCCESSFUL') {
+        emailext(
+            to: "${committerEmail}",
+            //to: '$DEFAULT_RECIPIENTS',
+            subject: subject,
+            body: details,
+            //attachmentsPattern: attachmentsPattern,
+            //recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+            mimeType: "text/html"
+        )
+    }
+}
 pipeline {
     agent any 
 //    {
@@ -9,6 +37,7 @@ pipeline {
     tools{
             maven 'maven'
      }
+    def committerEmail = sh (script: 'git --no-pager show -s --format=\'%ae\'', returnStdout: true).trim()
     stages {
         stage('Checkout') {
             steps {
@@ -17,7 +46,14 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean package'
+                try{
+                    sh 'mvn -B -DskipTests clean package'
+                    notifyBuild('FAILED_BUILD', committerEmail)
+                }
+                catch (exc) {
+                notifyBuild('FAILED_BUILD', committerEmail)
+                throw(exc)
+                }
             }
         }
         stage('Test') { 
@@ -37,3 +73,4 @@ pipeline {
         }
     }
 }
+    
