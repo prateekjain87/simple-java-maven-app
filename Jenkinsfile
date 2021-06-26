@@ -49,7 +49,7 @@ pipeline {
                     def committerEmail = sh (script: 'git --no-pager show -s --format=\'%ae\'', returnStdout: true).trim()
                     try {
                         sh 'mvn -B -DskipTests clean package'
-                        notifyBuild('FAILED_BUILD', committerEmail)
+                        notifyBuild('SUCCESSFUL', committerEmail)
                     }
                     catch (exc) {
                         notifyBuild('FAILED_BUILD', committerEmail)
